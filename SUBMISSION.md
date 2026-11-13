@@ -1,9 +1,9 @@
 # Submission
 
 ## Candidate
-- **Name:** _TODO_
+- **Name:** Arnav Shyam
 - **Assignment chosen:** A (Data)
-- **Time spent (honest estimate):** _TODO_
+- **Time spent (honest estimate):** ~1.5h, built with heavy AI assistance (see `AI_USAGE.md`)
 
 ## How to run
 ```bash
@@ -77,6 +77,7 @@ latest drop.
 | Two columns mapping to the same field: the first column wins | Deterministic; spec is silent | Last column wins |
 | Missing/empty optional value is **not** a warning; only present-but-invalid is | Matches the "optional field present but invalid" wording | — |
 | Defaults (`preferred_language → en`) are not baked into storage; the merged value stays null and the default applies when reading | A later duplicate row with a real value must still be able to win; storing the default would look like a real value | Store the default at merge time (equivalent here, but less honest) |
+| A merged duplicate can change `external_ref` (the reference field follows last-non-null-write-wins like every other field); `batch_id` never changes | Spec says later rows overwrite non-null fields and only pins `batch_id` | Freeze the reference at first sight |
 | Decimal rounding is half-up | Usual for money | Python's default banker's rounding |
 | `D/M/YYYY` without zero padding is accepted | Same format, just unpadded | Strict two digits |
 | An event whose `occurred_at` can't be parsed counts as **malformed** | It can't be placed on a date or ordered; never happens in the generator | Keep it and treat it as orphan |
@@ -114,8 +115,14 @@ latest drop.
 - **End-to-end** (runs the provided generator): incremental = all-at-once = re-ingested
   output; orphan-then-linked; the README's example values for seed 42 (`0.5625`,
   `2026-10-14T17:55:24+05:30`); changed file refused; no plaintext PII; append-only triggers.
-- I also cross-checked `events_total`, `malformed_events`, `duplicate_events_dropped` and the
-  lead row count with a separate throwaway script for seed 42.
+- **Independent reference check (manual, not in the repo):** a separate throwaway implementation of the spec
+  (in-memory, no DB, sharing no code) produced byte-identical output for all 5 files on seeds
+  42, 1, 7, 123, 2026 and 99999 (small) and seed 5 (large, ~133k leads).
+- **Real crash (manual):** `kill -9` during the large drop_2 ingest left drop_1 intact and nothing from
+  drop_2; re-running drop_2 produced reports identical to the reference.
+- Also checked by hand: a dirty CSV (BOM, messy headers, CRLF, short/blank rows, merge +
+  warnings) and events arriving before their lead; all behaved as specified.
+- Ran the commands and test suite on Windows (Python 3.14) as well as Linux.
 - **Not tested:** that the reports match your expected files exactly (I don't have them),
   beyond the README examples, which match.
 
