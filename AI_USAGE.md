@@ -1,20 +1,31 @@
 # AI Usage Disclosure
 
-AI tools are allowed. We want to know **how** you used them, because using them well is a
-skill. Honest answers are never held against you. Discovering undisclosed use is.
+> DRAFT: the parts marked _TODO_ must be written by me, in my own words, before submitting.
 
 ## Tools used
-_e.g. Claude, Cursor, Copilot, ChatGPT, or "none"_
+Claude (Anthropic), used as a coding agent.
 
 ## What I used them for
-_e.g. "scaffolded the FastAPI receiver", "explained Temporal activity retries", "wrote the first
-draft of the phone-normalisation tests"_
+- Claude wrote the first version of the whole solution: the SQLite schema, the ingest and
+  report code, the PII approach (HMAC blind index + Fernet), the tests, and the first draft of
+  `SUBMISSION.md`.
+- Running the generator on seeds 42 and 7 and on the large dataset, and timing it.
 
 ## What I wrote or decided myself
-_The parts that are your own thinking: design, data model, edge-case handling..._
+- Chose Assignment A over B.
+- _TODO: list what you reviewed, changed or decided yourself (e.g. decisions in the
+  SUBMISSION.md table you agree or disagree with, anything you rewrote)._
 
 ## Where the AI was wrong or unhelpful
-_At least one example of output you rejected or had to fix, and how you noticed._
+- _TODO: at least one real example from your own review._
+- One from the build itself: the first PII check flagged ~369 "10-digit phone numbers" in the
+  database. Looking closer, they were digit runs inside HMAC hex digests, not phones. The
+  final test checks for a specific known name and phone in the raw DB bytes instead.
 
 ## How I verified AI-generated code
-_Tests, manual runs, reading it line by line..._
+- 75 pytest tests (`python -m pytest solution`), including end-to-end runs of the provided
+  generator.
+- Checked the output against the README's example values for seed 42 (`0.5625` connectivity,
+  `2026-10-14T17:55:24+05:30` last call); both match.
+- Cross-checked event and lead-row counts with a separate throwaway script.
+- _TODO: describe your own line-by-line read-through and any manual checks you ran._

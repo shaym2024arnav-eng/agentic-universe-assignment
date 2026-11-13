@@ -9,3 +9,8 @@ data_large/
 reports/
 final_state.csv
 .pytest_cache/
+
+# solution: SQLite sidecar files and the local PII key
+*.db-wal
+*.db-shm
+*.key
